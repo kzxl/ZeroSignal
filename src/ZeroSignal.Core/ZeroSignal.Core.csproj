@@ -8,8 +8,11 @@
     <PackageTags>dsp;signal-processing;butterworth;chebyshev;filterm;filfilt;wavelet;dwt;levenberg-marquardt;optimization</PackageTags>
   </PropertyGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="Exists('..\..\..\ZeroTensor\src\ZeroTensor.Core\ZeroTensor.Core.csproj')">
     <ProjectReference Include="..\..\..\ZeroTensor\src\ZeroTensor.Core\ZeroTensor.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="!Exists('..\..\..\ZeroTensor\src\ZeroTensor.Core\ZeroTensor.Core.csproj')">
+    <PackageReference Include="ZeroTensor.Core" Version="1.0.0" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'net462'">
