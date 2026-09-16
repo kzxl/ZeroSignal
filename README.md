@@ -2,16 +2,19 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![.NET Multi-Targeting](https://img.shields.io/badge/.NET-8.0%20%7C%204.6.2%20%7C%20Standard%202.0-purple.svg)](https://dotnet.microsoft.com/)
-[![DSP & Spectral](https://img.shields.io/badge/DSP-FFT%20%7C%20STFT%20%7C%20EKF-blue.svg)]()
+[![DSP & Spectral](https://img.shields.io/badge/DSP-FFT%20%7C%20STFT%20%7C%20EKF%20%7C%20VAD-blue.svg)]()
 [![Zero External Dependencies](https://img.shields.io/badge/Dependencies-0%20(Pure%20C%23)-brightgreen.svg)]()
-[![NuGet Version](https://img.shields.io/badge/NuGet-1.0.0-blue.svg)](https://www.nuget.org/packages/ZeroSignal.Core)
+[![NuGet Version](https://img.shields.io/badge/NuGet-1.1.0-blue.svg)](https://www.nuget.org/packages/ZeroSignal.Core)
 
-**ZeroSignal** is an advanced Digital Signal Processing (DSP), spectral analysis, and state estimation library for .NET with **zero external dependencies**. Written in pure C#, it delivers industrial-grade Fast Fourier Transforms (FFT), Short-Time Fourier Transforms (STFT), spectrogram generation, zero-phase IIR/FIR digital filtering (`FiltFilt`), Kalman filtering (EKF), and wavelet transforms for predictive maintenance and edge telemetry.
+**ZeroSignal** is an advanced Digital Signal Processing (DSP), spectral analysis, and state estimation library for .NET with **zero external dependencies**. Written in pure C#, it delivers industrial-grade Fast Fourier Transforms (FFT), Short-Time Fourier Transforms (STFT), spectrogram generation, zero-phase IIR/FIR digital filtering (`FiltFilt`), Kalman filtering (EKF), voice activity detection (VAD), and adaptive jitter buffers for predictive maintenance and edge telemetry.
 
 ---
 
 ## 🌟 Key Capabilities
 
+- **Audio & Speech Telemetry (`ZeroSignal.Core.Audio`)**:
+  - **Voice Activity Detection (`VadDetector`)**: Energy and spectral zero-crossing rate voice segmentation.
+  - **Adaptive Audio Jitter Buffer (`AudioJitterBuffer`)**: Smooths out UDP/real-time packet arrival jitter.
 - **Spectral Analysis (`ZeroSignal.Core.Spectral`)**:
   - Radix-2 Cooley-Tukey in-place **FFT / IFFT** with bit-reversal permutations.
   - **STFT (Short-Time Fourier Transform)**: Windowed time-frequency analysis with configurable hop sizes.
@@ -104,6 +107,15 @@ Tested on Intel Core i7-13700K (Release x64):
 | **Cooley-Tukey 65536-FFT** | $65536$ points | **$1.85 \text{ ms}$** | In-place ($0$ bytes) |
 | **STFT Spectrogram** | $100\text{k points}$ | **$14.2 \text{ ms}$** | Continuous 2D grid |
 | **Butterworth FiltFilt** | $50\text{k points}$ | **$2.10 \text{ ms}$** | Single buffer pass |
+
+---
+
+## 📜 Release History
+
+| Version | Release Date | Key Milestones & Highlights |
+| :--- | :---: | :--- |
+| **`v1.1.0`** | 2026-09-16 | **Audio Telemetry, VAD & Jitter Buffering**:<br/>• Integrated `VadDetector` for energy/spectral voice activity detection.<br/>• Integrated adaptive `AudioJitterBuffer` for real-time UDP stream de-jittering.<br/>• 21 automated DSP & spectral tests passing (100% success rate). |
+| **`v1.0.0`** | 2026-09-09 | **Initial Sovereign Release**:<br/>• Radix-2 Cooley-Tukey FFT/IFFT, STFT, and 2D Spectrogram PSD calculation.<br/>• Butterworth IIR and zero-phase `FiltFilt` forward-backward filtering.<br/>• Linear Kalman & Extended Kalman Filter (EKF) state estimation engines. |
 
 ---
 
