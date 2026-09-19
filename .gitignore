@@ -8,3 +8,5 @@ dist/
 *.sln.docstates
 .DS_Store
 Thumbs.db
+nupkgs/
+packages/
