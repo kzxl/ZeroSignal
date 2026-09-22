@@ -18,6 +18,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\ZeroSignal.Core\ZeroSignal.Core.csproj" />
-    <PackageReference Include="ZeroTensor.Core" Version="1.0.0" />
+    <PackageReference Include="ZeroTensor.Core" Version="1.1.0" />
   </ItemGroup>
 </Project>
