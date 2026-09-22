@@ -1,5 +1,6 @@
 # ZeroSignal
 
+[![ZeroPlatform Tier](https://img.shields.io/badge/ZeroPlatform-Tier%203%20(Perception%20%26%20AI)-7c3aed.svg)](https://github.com/kzxl/ZeroPlatform)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![.NET Multi-Targeting](https://img.shields.io/badge/.NET-8.0%20%7C%204.6.2%20%7C%20Standard%202.0-purple.svg)](https://dotnet.microsoft.com/)
 [![DSP & Spectral](https://img.shields.io/badge/DSP-FFT%20%7C%20STFT%20%7C%20EKF%20%7C%20VAD-blue.svg)]()
