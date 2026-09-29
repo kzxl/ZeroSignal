@@ -1,214 +1,85 @@
 using System;
-using System.Collections.Generic;
 
 namespace ZeroSignal.Core.Audio
 {
     /// <summary>
     /// Represents an audio packet with sequence number, timestamp, and payload.
     /// </summary>
+    [Obsolete("AudioPacket has been moved to ZeroAudio.Streaming.AudioPacket in ZeroAudio.Core.")]
     public readonly struct AudioPacket
     {
-        public uint SequenceNumber { get; }
-        public uint TimestampMs { get; }
-        public byte[] Payload { get; }
+        private readonly ZeroAudio.Streaming.AudioPacket _inner;
+
+        public uint SequenceNumber => _inner.SequenceNumber;
+        public uint TimestampMs => _inner.TimestampMs;
+        public byte[] Payload => _inner.Payload;
 
         public AudioPacket(uint sequenceNumber, uint timestampMs, byte[] payload)
         {
-            SequenceNumber = sequenceNumber;
-            TimestampMs = timestampMs;
-            Payload = payload ?? Array.Empty<byte>();
+            _inner = new ZeroAudio.Streaming.AudioPacket(sequenceNumber, timestampMs, payload);
         }
+
+        public AudioPacket(ZeroAudio.Streaming.AudioPacket inner)
+        {
+            _inner = inner;
+        }
+
+        public static implicit operator ZeroAudio.Streaming.AudioPacket(AudioPacket p) => p._inner;
+        public static implicit operator AudioPacket(ZeroAudio.Streaming.AudioPacket p) => new AudioPacket(p);
     }
 
     /// <summary>
     /// Jitter buffer for real-time audio/voice streaming over unreliable transports (UDP/RTP).
-    /// Reorders out-of-sequence packets, deduplicates retransmissions, absorbs arrival jitter,
-    /// and ensures smooth, continuous playout.
     /// </summary>
+    [Obsolete("AudioJitterBuffer has been moved to ZeroAudio.Streaming.AudioJitterBuffer in ZeroAudio.Core.")]
     public sealed class AudioJitterBuffer
     {
-        private readonly List<AudioPacket> _buffer;
-        private readonly object _syncLock = new object();
-        private uint _lastPlayedSeq;
-        private bool _hasPlayedAny;
-        private bool _isBuffering = true;
+        private readonly ZeroAudio.Streaming.AudioJitterBuffer _inner;
 
-        /// <summary>
-        /// Target playout delay in milliseconds.
-        /// Default: 40 ms.
-        /// </summary>
-        public int TargetDelayMs { get; set; } = 40;
-
-        /// <summary>
-        /// Expected duration of each audio packet in milliseconds.
-        /// Default: 20 ms.
-        /// </summary>
-        public int PacketDurationMs { get; set; } = 20;
-
-        /// <summary>
-        /// Maximum number of packets the buffer can hold before dropping old frames.
-        /// Default: 50 frames (approx 1000 ms at 20ms/frame).
-        /// </summary>
-        public int MaxCapacity { get; set; } = 50;
-
-        /// <summary>
-        /// Total number of packets received and accepted.
-        /// </summary>
-        public long TotalPushed { get; private set; }
-
-        /// <summary>
-        /// Total number of packets successfully read for playout.
-        /// </summary>
-        public long TotalPopped { get; private set; }
-
-        /// <summary>
-        /// Number of packets arrived after their playout time window expired.
-        /// </summary>
-        public long LatePacketsDropped { get; private set; }
-
-        /// <summary>
-        /// Number of duplicate packets dropped.
-        /// </summary>
-        public long DuplicatePacketsDropped { get; private set; }
-
-        /// <summary>
-        /// Number of packets dropped due to buffer capacity overflow.
-        /// </summary>
-        public long OverflowPacketsDropped { get; private set; }
-
-        /// <summary>
-        /// Current number of packets waiting in the jitter buffer.
-        /// </summary>
-        public int Count
+        public int TargetDelayMs
         {
-            get
-            {
-                lock (_syncLock)
-                {
-                    return _buffer.Count;
-                }
-            }
+            get => _inner.TargetDelayMs;
+            set => _inner.TargetDelayMs = value;
         }
+
+        public int PacketDurationMs
+        {
+            get => _inner.PacketDurationMs;
+            set => _inner.PacketDurationMs = value;
+        }
+
+        public int MaxCapacity
+        {
+            get => _inner.MaxCapacity;
+            set => _inner.MaxCapacity = value;
+        }
+
+        public long TotalPushed => _inner.TotalPushed;
+        public long TotalPopped => _inner.TotalPopped;
+        public long LatePacketsDropped => _inner.LatePacketsDropped;
+        public long DuplicatePacketsDropped => _inner.DuplicatePacketsDropped;
+        public long OverflowPacketsDropped => _inner.OverflowPacketsDropped;
+        public int Count => _inner.Count;
 
         public AudioJitterBuffer(int targetDelayMs = 40, int packetDurationMs = 20, int maxCapacity = 50)
         {
-            TargetDelayMs = targetDelayMs;
-            PacketDurationMs = Math.Max(1, packetDurationMs);
-            MaxCapacity = maxCapacity;
-            _buffer = new List<AudioPacket>(Math.Min(maxCapacity, 32));
+            _inner = new ZeroAudio.Streaming.AudioJitterBuffer(targetDelayMs, packetDurationMs, maxCapacity);
         }
 
-        /// <summary>
-        /// Enqueues an incoming audio packet into the jitter buffer.
-        /// Reorders by sequence number and discards duplicates or expired packets.
-        /// </summary>
-        public bool Push(uint sequenceNumber, uint timestampMs, byte[] payload)
-        {
-            lock (_syncLock)
-            {
-                if (_hasPlayedAny)
-                {
-                    int seqDiff = (int)(sequenceNumber - _lastPlayedSeq);
-                    if (seqDiff <= 0)
-                    {
-                        // Packet arrived too late; its playout slot has already passed
-                        LatePacketsDropped++;
-                        return false;
-                    }
-                }
+        public bool Push(uint sequenceNumber, uint timestampMs, byte[] payload) =>
+            _inner.Push(sequenceNumber, timestampMs, payload);
 
-                // Check for duplicates and find insertion point (binary search by SequenceNumber)
-                int insertIndex = -1;
-                for (int i = 0; i < _buffer.Count; i++)
-                {
-                    int diff = (int)(sequenceNumber - _buffer[i].SequenceNumber);
-                    if (diff == 0)
-                    {
-                        // Duplicate packet
-                        DuplicatePacketsDropped++;
-                        return false;
-                    }
-                    if (diff < 0)
-                    {
-                        insertIndex = i;
-                        break;
-                    }
-                }
-
-                var packet = new AudioPacket(sequenceNumber, timestampMs, payload);
-
-                if (insertIndex >= 0)
-                {
-                    _buffer.Insert(insertIndex, packet);
-                }
-                else
-                {
-                    _buffer.Add(packet);
-                }
-
-                // Handle capacity overflow by dropping the oldest unplayed packet
-                if (_buffer.Count > MaxCapacity)
-                {
-                    _buffer.RemoveAt(0);
-                    OverflowPacketsDropped++;
-                }
-
-                TotalPushed++;
-                return true;
-            }
-        }
-
-        /// <summary>
-        /// Attempts to retrieve the next in-order audio packet for playout.
-        /// Returns false if the buffer is currently buffering to absorb jitter, or if it is empty (underrun).
-        /// </summary>
         public bool TryPop(out AudioPacket packet)
         {
-            lock (_syncLock)
+            if (_inner.TryPop(out var innerPacket))
             {
-                int minPacketsToStart = Math.Max(1, TargetDelayMs / PacketDurationMs);
-
-                if (_isBuffering)
-                {
-                    if (_buffer.Count >= minPacketsToStart)
-                    {
-                        _isBuffering = false;
-                    }
-                    else
-                    {
-                        packet = default;
-                        return false;
-                    }
-                }
-
-                if (_buffer.Count == 0)
-                {
-                    _isBuffering = true; // Underrun occurred, re-buffer
-                    packet = default;
-                    return false;
-                }
-
-                packet = _buffer[0];
-                _buffer.RemoveAt(0);
-
-                _lastPlayedSeq = packet.SequenceNumber;
-                _hasPlayedAny = true;
-                TotalPopped++;
+                packet = new AudioPacket(innerPacket);
                 return true;
             }
+            packet = default;
+            return false;
         }
 
-        /// <summary>
-        /// Clears all buffered packets and resets jitter buffer state.
-        /// </summary>
-        public void Flush()
-        {
-            lock (_syncLock)
-            {
-                _buffer.Clear();
-                _isBuffering = true;
-                _hasPlayedAny = false;
-            }
-        }
+        public void Flush() => _inner.Flush();
     }
 }

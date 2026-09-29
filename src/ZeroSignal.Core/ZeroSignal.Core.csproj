@@ -9,8 +9,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ZeroPrimitives.Core" Version="1.4.0" />
+    <PackageReference Include="ZeroPrimitives.Core" Version="1.4.1" />
     <PackageReference Include="ZeroTensor.Core" Version="1.1.0" />
+    <PackageReference Include="ZeroAudio.Core" Version="1.1.0" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'net462'">
